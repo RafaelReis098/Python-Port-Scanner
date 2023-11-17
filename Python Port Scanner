@@ -1,0 +1,28 @@
+import socket
+from concurrent.futures import ThreadPoolExecutor
+
+def scan_port(target_ip, port):
+    try:
+        # Create a socket object
+        sock = socket.create_connection((target_ip, port), timeout=1)
+
+        # If the connection is successful, the port is open
+        print(f"Port {port} is open.")
+        sock.close()
+    except (socket.timeout, socket.error):
+        # If an exception occurs, the port is closed
+        pass
+
+def scan_ports(target_ip, start_port, end_port, max_threads=20):
+    print(f"Scanning ports on {target_ip}...\n")
+
+    with ThreadPoolExecutor(max_threads) as executor:
+        # Submit port scanning tasks to the thread pool
+        futures = [executor.submit(scan_port, target_ip, port) for port in range(start_port, end_port + 1)]
+
+        # Wait for all tasks to complete
+        for future in futures:
+            future.result()
+
+# Example: Scan ports on the local machine (127.0.0.1) in the range 1 to 1024
+scan_ports("127.0.0.1", 1, 1024)
